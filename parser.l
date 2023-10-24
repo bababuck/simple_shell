@@ -59,6 +59,12 @@ extern YYSTYPE yylval;
   return(PIPE);
 }
 
+\".*\" {
+  yylval.str=strdup(yytext+1);
+  yylval.str[strlen(yylval.str)-1] = '\0';
+  return(WORD_NOWC);
+}
+
 [A-Za-z0-9\-\/\.]+ {
   yylval.str=strdup(yytext);
   return(WORD);

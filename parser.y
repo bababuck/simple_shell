@@ -25,13 +25,14 @@ bool continue_execution;
  
 %}
 
-%token NEWLINE FORWARD BACKWARD FORWARDFORWARD FORWARDAMPERSAND AMPERSAND PIPE WORD UNRECOGNIZED FORWARDFORWARDAMPERSAND AMPERSANDAMPERSAND TWOFORWARD TWOFORWARDFORWARD
+%token NEWLINE FORWARD BACKWARD FORWARDFORWARD FORWARDAMPERSAND AMPERSAND PIPE WORD UNRECOGNIZED FORWARDFORWARDAMPERSAND AMPERSANDAMPERSAND TWOFORWARD TWOFORWARDFORWARD WORD_NOWC
 
 %union {
   char *str;              /* Ptr to constant string (strings are malloc'd) */
 };
 
 %type <str> WORD;
+%type <str> WORD_NOWC;
 %%
 
 goal: command ;
@@ -45,6 +46,9 @@ cmd:
 
 cmd_and_args:
     cmd_and_args WORD {
+      sub_command_insert(curr_sub_cmd, $2);
+    }
+    | cmd_and_args WORD_NOWC {
       sub_command_insert(curr_sub_cmd, $2);
     }
     | cmd ;
