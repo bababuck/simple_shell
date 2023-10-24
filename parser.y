@@ -127,7 +127,9 @@ int main()
   curr_cmd = command_factory();
   continue_execution = true;
   prompt();
-  yyparse();
+  while (1) {
+    yyparse();
+  }
   delete_command(curr_cmd);
   return 0;
 }
