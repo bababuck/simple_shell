@@ -20,7 +20,9 @@ bool continue_execution;
  * Eventually want to print the working directory
  */
  void prompt() {
-   printf("gimme $ ");
+   char cwd[1024];
+   getcwd(cwd, 1024);
+   printf("%s $ ", cwd);
  }
  
 %}
