@@ -7,6 +7,7 @@ A command can be broken up into small subcommands.
 #include<stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "command.h"
@@ -98,9 +99,39 @@ int setup_output_file(int std_desc, bool append, const char * const file_name) {
 }
 
 /**
+ * Check to see if the requested command is a builtin function.
+ *
+ * Cannot fork in this case since need the change to be associated
+ * with the shell's process.
+ *
+ * If found run the proper command
+ *
+ * Returns:
+ * - 0 for success
+ * - -1 on error
+ * - 1 if not a builtin command
+ */
+bool check_and_run_builtin(sub_command_t *sub_cmd, int* const exit_code) {
+  if (strcmp(sub_cmd->args[0], "cd") == 0) {
+    if (sub_cmd->arg_count != 2) {
+      *exit_code = -1;
+    } else {
+      *exit_code = chdir(sub_cmd->args[1]);
+    }
+    return true;
+  }
+  return false;
+}
+
+/**
  * Fork and handle child and parent paths.
  */
 bool spawn_subproc(sub_command_t *sub_cmd, command_t *cmd, int *status, bool last) {
+  int exit_code;
+  bool found =  check_and_run_builtin(sub_cmd, &exit_code);
+  if (found) {
+    return exit_code == 0;
+  }
   int ret = fork();
   if (ret == 0) { // Child
     execvp(sub_cmd->args[0], sub_cmd->args); // Should never return
