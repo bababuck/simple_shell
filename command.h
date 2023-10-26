@@ -34,6 +34,13 @@ sub_command_t* sub_command_factory();
 void sub_command_insert(sub_command_t* sub_cmd, char* argument);
 
 /**
+ * Look for any wildcards and properly expand if found.
+ *
+ * Insert the matches into the sub-command as arguments.
+ */
+void insert_expand_wildcards(sub_command_t *sub_cmd, char *arg);
+
+/**
  * Delete a sub-command, including free the associated memory.
  *
  * Assumes all the memory for the arguments was dynamically allocated.

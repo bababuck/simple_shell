@@ -3,6 +3,8 @@
 A command can be broken up into small subcommands.
 */
 
+#include <dirent.h>
+#include <regex.h>
 #include <stdio.h>
 #include<stdint.h>
 #include <stdlib.h>
@@ -47,6 +49,68 @@ void sub_command_insert(sub_command_t* sub_cmd, char* argument)
   sub_cmd->args = realloc(sub_cmd->args, (1 + sub_cmd->arg_count) * sizeof(char *));
   sub_cmd->args[sub_cmd->arg_count - 1] = argument;
   sub_cmd->args[sub_cmd->arg_count] = NULL;
+}
+
+/**
+ * Convert an expression to a regular expression.
+ *
+ * Dynamically allocates new memory for regular expression.
+ * Adds on end and start of line matching
+ */
+char* convert_to_regex(const char *str) {
+  char * const regex = (char*) malloc((2 * strlen(str) + 2) * sizeof(char));
+  char *r = regex;
+  *r = '^'; // Match start of line
+  ++r;
+  while (*str) {
+    if (*str == '*') {
+      *r = '.';
+      ++r;
+      *r = '*';
+    } else {
+      *r = *str;
+    }
+    ++r;
+    ++str;
+  }
+  *r = '$'; // Match end of line
+  ++r;
+  *r = '\0'; // End c-string
+  return regex;
+}
+
+void insert_expand_wildcards(sub_command_t *sub_cmd, char *arg) {
+  // Insert arg and return if no special charecters
+  if (strchr(arg, '*') == NULL) {
+    sub_command_insert(sub_cmd, arg);
+    return;
+  }
+
+  char *regex = convert_to_regex(arg);
+
+  regex_t re;
+  if (regcomp(&re, regex, 0) != 0) {
+    perror("regcomp");
+    return;
+  }
+
+  DIR * dir = opendir("."); // Probably need to split for e.g dir/file*
+  if (dir == NULL) {
+    perror("opendir");
+    return;
+  }
+
+  struct dirent *entry;
+  while ((entry = readdir(dir)) != NULL) {
+    if (regexec(&re, entry->d_name, 0, NULL, 0) == 0) {
+      sub_command_insert(sub_cmd, strdup(entry->d_name));
+    }
+  }
+  closedir(dir);
+
+  // Cleanup dynamically allocated strings
+  free(regex);
+  free(arg);
 }
 
 command_t* command_factory()

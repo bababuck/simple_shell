@@ -65,7 +65,7 @@ extern YYSTYPE yylval;
   return(WORD_NOWC);
 }
 
-[A-Za-z0-9\-\/\.]+ {
+[A-Za-z0-9\-\/\.\*]+ {
   yylval.str=strdup(yytext);
   return(WORD);
 }

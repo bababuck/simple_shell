@@ -48,7 +48,7 @@ cmd:
 
 cmd_and_args:
     cmd_and_args WORD {
-      sub_command_insert(curr_sub_cmd, $2);
+      insert_expand_wildcards(curr_sub_cmd, $2);
     }
     | cmd_and_args WORD_NOWC {
       sub_command_insert(curr_sub_cmd, $2);
